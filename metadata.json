@@ -1,0 +1,7 @@
+{
+  "name": "Wood Heaven Farms",
+  "description": "Ultra-premium luxury farmhouse and events venue website with integrated booking and enquiry systems.",
+  "requestFramePermissions": [
+    "geolocation"
+  ]
+}
