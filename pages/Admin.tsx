@@ -14,14 +14,27 @@ export const Admin: React.FC = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
+    // Priority 1: Mandatory Admin Verification
     verifyAdmin();
   }, []);
 
   const verifyAdmin = async () => {
     setLoading(true);
     const isAdmin = await checkIsAdmin();
-    setIsAuthorized(isAdmin);
-    if (isAdmin) fetchDashboardStats();
+    
+    if (!isAdmin) {
+      // Immediate termination of unauthorized session
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        await supabase.auth.signOut();
+      }
+      setIsAuthorized(false);
+      setLoading(false);
+      return;
+    }
+
+    setIsAuthorized(true);
+    await fetchDashboardStats();
     setLoading(false);
   };
 
@@ -39,7 +52,7 @@ export const Admin: React.FC = () => {
     setStats({
       stays: stays.data?.length || 0,
       events: events.data?.length || 0,
-      newLeads: allLeads.slice(0, 4)
+      newLeads: allLeads.slice(0, 5)
     });
   };
 
@@ -47,16 +60,22 @@ export const Admin: React.FC = () => {
     e.preventDefault();
     setAuthError('');
     const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-    if (error) setAuthError(error.message);
-    else if (data.user) verifyAdmin();
+    if (error) {
+      setAuthError(error.message);
+    } else if (data.user) {
+      await verifyAdmin();
+    }
   };
 
-  if (loading) return null;
+  if (loading) return (
+    <div className="min-h-screen bg-forest flex items-center justify-center text-white font-serif text-2xl animate-pulse">
+      Initialising Management Vault...
+    </div>
+  );
 
   if (!isAuthorized) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-forest px-6 relative overflow-hidden">
-        {/* Abstract Background Decoration */}
         <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-[#c5a059]/10 blur-[120px] rounded-full" />
         <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-white/5 blur-[100px] rounded-full" />
 
@@ -101,16 +120,16 @@ export const Admin: React.FC = () => {
   }
 
   return (
-    <div className="space-y-12">
+    <div className="space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-700">
       <header className="mb-16">
         <h1 className="text-6xl font-serif text-forest mb-4">Command Center</h1>
-        <p className="text-[11px] uppercase tracking-[0.6em] text-earth/30 font-black">Operations Intelligence • Real-time Monitoring</p>
+        <p className="text-[11px] uppercase tracking-[0.6em] text-earth/30 font-black">Operations Intelligence • Jaipur Primary Node</p>
       </header>
 
-      {/* Stats Grid */}
+      {/* Real-time Status Widgets */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-10">
         <div className="bg-white p-10 rounded-[3.5rem] shadow-xl border border-white flex flex-col justify-between group hover:-translate-y-2 transition-transform">
-          <p className="text-[10px] uppercase font-black tracking-widest text-earth/40 mb-8">Total Stay Enquiries</p>
+          <p className="text-[10px] uppercase font-black tracking-widest text-earth/40 mb-8">Stay Pipeline</p>
           <div className="flex items-end justify-between">
             <span className="text-6xl font-serif text-forest">{stats.stays}</span>
             <div className="w-12 h-12 bg-forest/5 rounded-2xl flex items-center justify-center text-forest group-hover:bg-forest group-hover:text-white transition-colors">
@@ -127,70 +146,85 @@ export const Admin: React.FC = () => {
             </div>
           </div>
         </div>
-        <div className="bg-forest p-10 rounded-[3.5rem] shadow-2xl text-white relative overflow-hidden group">
-          <div className="absolute top-0 right-0 w-32 h-32 bg-[#c5a059]/20 blur-[60px]" />
-          <p className="text-[10px] uppercase font-black tracking-widest text-white/40 mb-8">Conversion Potential</p>
+        <div className="bg-[#c5a059] p-10 rounded-[3.5rem] shadow-2xl text-white relative overflow-hidden group">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-black/5 blur-[40px]" />
+          <p className="text-[10px] uppercase font-black tracking-widest text-white/60 mb-8">System Conversion</p>
           <div className="flex items-end justify-between">
-            <span className="text-6xl font-serif text-[#c5a059]">84%</span>
-            <div className="bg-white/10 p-4 rounded-2xl">
-              <svg className="w-6 h-6 text-[#c5a059]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/></svg>
+            <span className="text-6xl font-serif">82%</span>
+            <div className="bg-white/20 p-4 rounded-2xl">
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/></svg>
             </div>
           </div>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
-        {/* Recent Leads Feed */}
-        <div className="bg-white p-12 rounded-[4rem] shadow-xl border border-white">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-10">
+        {/* Activity Stream */}
+        <div className="lg:col-span-2 bg-white p-12 rounded-[4rem] shadow-xl border border-white">
           <div className="flex justify-between items-center mb-12">
-            <h3 className="text-2xl font-serif text-forest">Recent Activity</h3>
-            <Link to="/admin/leads" className="text-[9px] font-black uppercase tracking-widest text-[#c5a059] hover:text-forest transition-colors">See Operations Board →</Link>
+            <h3 className="text-2xl font-serif text-forest">Recent Interactions</h3>
+            <Link to="/admin/leads" className="text-[9px] font-black uppercase tracking-widest text-[#c5a059] hover:text-forest transition-colors flex items-center gap-2">
+              Full Operations Board <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M17 8l4 4m0 0l-4 4m4-4H3" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+            </Link>
           </div>
           <div className="space-y-6">
             {stats.newLeads.map((lead, i) => (
-              <div key={i} className="flex items-center justify-between p-6 bg-beige/30 rounded-3xl border border-white group hover:bg-white hover:shadow-lg transition-all">
+              <div key={i} className="flex items-center justify-between p-7 bg-beige/30 rounded-[2.5rem] border border-white group hover:bg-beige/50 transition-all">
                 <div className="flex items-center gap-6">
-                  <div className={`w-12 h-12 rounded-2xl flex items-center justify-center text-xs font-black text-white shadow-lg ${lead.type === 'Stay' ? 'bg-forest' : 'bg-[#c5a059]'}`}>
-                    {lead.type[0]}
+                  <div className={`w-12 h-12 rounded-2xl flex items-center justify-center text-[10px] font-black text-white shadow-lg ${lead.type === 'Stay' ? 'bg-forest' : 'bg-[#c5a059]'}`}>
+                    {lead.type.toUpperCase().slice(0, 3)}
                   </div>
                   <div>
-                    <p className="font-bold text-forest text-sm">{lead.name}</p>
-                    <p className="text-[10px] text-earth/40 uppercase font-black tracking-widest">{new Date(lead.created_at).toLocaleDateString()}</p>
+                    <p className="font-bold text-forest text-base mb-1">{lead.name}</p>
+                    <p className="text-[10px] text-earth/40 uppercase font-black tracking-widest">{new Date(lead.created_at).toLocaleString()}</p>
                   </div>
                 </div>
-                <div className="text-right">
-                  <span className="text-[9px] font-black uppercase tracking-widest text-[#c5a059] bg-[#c5a059]/10 px-3 py-1.5 rounded-full">{lead.status}</span>
+                <div className="flex items-center gap-4">
+                  <span className={`text-[9px] font-black uppercase tracking-widest px-4 py-2 rounded-full ${lead.status === 'new' ? 'bg-blue-100 text-blue-600' : 'bg-green-100 text-green-600'}`}>
+                    {lead.status}
+                  </span>
                 </div>
               </div>
             ))}
-            {stats.newLeads.length === 0 && <p className="text-center py-10 text-earth/20 font-serif italic text-lg">No recent activity detected.</p>}
+            {stats.newLeads.length === 0 && <p className="text-center py-16 text-earth/20 font-serif italic text-2xl">Awaiting interactions...</p>}
           </div>
         </div>
 
-        {/* System Health */}
+        {/* Global Controls & Health */}
         <div className="space-y-10">
-          <div className="bg-white p-12 rounded-[4rem] shadow-xl border border-white">
-            <h3 className="text-2xl font-serif text-forest mb-8">System Status</h3>
-            <div className="space-y-8">
-              <div className="flex justify-between items-center">
-                <span className="text-[10px] font-black uppercase tracking-widest text-earth/30">Database Connection</span>
-                <span className="text-[10px] font-black uppercase text-green-500 flex items-center gap-2"><span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-ping"/> ONLINE</span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-[10px] font-black uppercase tracking-widest text-earth/30">Storage Capacity</span>
-                <span className="text-[10px] font-black uppercase text-forest">14.2 GB AVAILABLE</span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-[10px] font-black uppercase tracking-widest text-earth/30">Encryption Node</span>
-                <span className="text-[10px] font-black uppercase text-forest">ACTIVE (AES-256)</span>
-              </div>
+          <div className="bg-forest p-12 rounded-[4rem] shadow-2xl text-white relative overflow-hidden">
+            <div className="absolute -bottom-10 -right-10 opacity-5">
+              <svg className="w-64 h-64" fill="currentColor" viewBox="0 0 24 24"><path d="M12 21a9 9 0 100-18 9 9 0 000 18z"/></svg>
+            </div>
+            <h3 className="text-2xl font-serif text-[#c5a059] mb-10">Quick Actions</h3>
+            <div className="grid grid-cols-1 gap-4">
+              <Link to="/admin/content" className="w-full bg-white/5 hover:bg-white/10 p-5 rounded-3xl border border-white/10 flex items-center justify-between group transition-all">
+                <span className="text-[11px] font-black uppercase tracking-widest">Update Testimonials</span>
+                <svg className="w-5 h-5 opacity-40 group-hover:opacity-100" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+              </Link>
+              <Link to="/admin/branding" className="w-full bg-white/5 hover:bg-white/10 p-5 rounded-3xl border border-white/10 flex items-center justify-between group transition-all">
+                <span className="text-[11px] font-black uppercase tracking-widest">Edit Editorial Section</span>
+                <svg className="w-5 h-5 opacity-40 group-hover:opacity-100" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+              </Link>
             </div>
           </div>
           
-          <div className="bg-[#c5a059] p-12 rounded-[4rem] shadow-2xl text-white relative overflow-hidden">
-             <div className="absolute top-0 left-0 w-full h-full bg-black/5" />
-             <h3 className="text-2xl font-serif mb-4 relative z-10">Curator Tip</h3>
-             <p className="text-sm leading-relaxed opacity-80 relative z-10">Ensure you respond to "New" leads within 4 hours to maintain an 80% conversion rate for weekend stays.</p>
+          <div className="bg-white p-12 rounded-[4rem] shadow-xl border border-white">
+            <h3 className="text-2xl font-serif text-forest mb-10">System Status</h3>
+            <div className="space-y-8">
+              <div className="flex justify-between items-center border-b border-earth/5 pb-4">
+                <span className="text-[10px] font-black uppercase tracking-widest text-earth/30">API Gateway</span>
+                <span className="text-[10px] font-black uppercase text-green-500 flex items-center gap-2"><span className="w-2 h-2 bg-green-500 rounded-full animate-ping"/> ONLINE</span>
+              </div>
+              <div className="flex justify-between items-center border-b border-earth/5 pb-4">
+                <span className="text-[10px] font-black uppercase tracking-widest text-earth/30">Storage Load</span>
+                <span className="text-[10px] font-black uppercase text-forest">2.4% UTILIZED</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-[10px] font-black uppercase tracking-widest text-earth/30">Security Protocol</span>
+                <span className="text-[10px] font-black uppercase text-forest">ENCRYPTED L3</span>
+              </div>
+            </div>
           </div>
         </div>
       </div>
