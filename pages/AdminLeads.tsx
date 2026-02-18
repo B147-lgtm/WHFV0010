@@ -45,76 +45,101 @@ export const AdminLeads: React.FC = () => {
     if (!error) fetchLeads();
   };
 
-  if (loading) return <div className="p-20 text-center font-serif">Connecting to CRM...</div>;
+  if (loading) return null;
 
   return (
-    <div className="pt-24 min-h-screen bg-beige p-6">
-      <div className="container mx-auto">
-        <div className="bg-white rounded-[3rem] shadow-xl p-10">
-          <div className="flex justify-between items-center mb-12">
-            <h1 className="text-4xl font-serif text-forest">Enquiry Dashboard</h1>
-            <div className="flex bg-beige p-1 rounded-2xl">
-              <button 
-                onClick={() => setActiveTab('stays')}
-                className={`px-8 py-3 rounded-xl text-xs font-bold uppercase tracking-widest transition-all ${activeTab === 'stays' ? 'bg-forest text-white shadow-lg' : 'text-forest'}`}
-              >
-                Stays
-              </button>
-              <button 
-                onClick={() => setActiveTab('events')}
-                className={`px-8 py-3 rounded-xl text-xs font-bold uppercase tracking-widest transition-all ${activeTab === 'events' ? 'bg-forest text-white shadow-lg' : 'text-forest'}`}
-              >
-                Events
-              </button>
-            </div>
-          </div>
+    <div className="space-y-12">
+      <header className="flex flex-col lg:flex-row justify-between items-start lg:items-end mb-16 gap-8">
+        <div>
+          <h1 className="text-6xl font-serif text-forest mb-4">Lead Intelligence</h1>
+          <p className="text-[11px] uppercase tracking-[0.6em] text-earth/30 font-black">CRM Gateway • Enquiry Orchestration</p>
+        </div>
+        <div className="flex bg-white p-2 rounded-[2rem] shadow-xl border border-earth/5">
+          <button 
+            onClick={() => setActiveTab('stays')}
+            className={`px-10 py-4 rounded-[1.5rem] text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'stays' ? 'bg-forest text-white shadow-xl' : 'text-forest/40 hover:text-forest'}`}
+          >
+            Stay Bookings
+          </button>
+          <button 
+            onClick={() => setActiveTab('events')}
+            className={`px-10 py-4 rounded-[1.5rem] text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === 'events' ? 'bg-forest text-white shadow-xl' : 'text-forest/40 hover:text-forest'}`}
+          >
+            Event Proposals
+          </button>
+        </div>
+      </header>
 
-          <div className="overflow-x-auto">
-            <table className="w-full text-left">
-              <thead>
-                <tr className="border-b border-earth/10">
-                  <th className="py-6 px-4 text-[10px] uppercase tracking-widest font-bold text-earth/40">Details</th>
-                  <th className="py-6 px-4 text-[10px] uppercase tracking-widest font-bold text-earth/40">Schedule</th>
-                  <th className="py-6 px-4 text-[10px] uppercase tracking-widest font-bold text-earth/40">Guests</th>
-                  <th className="py-6 px-4 text-[10px] uppercase tracking-widest font-bold text-earth/40">Status</th>
-                  <th className="py-6 px-4 text-[10px] uppercase tracking-widest font-bold text-earth/40 text-right">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-earth/5">
-                {(activeTab === 'stays' ? stays : events).map((lead) => (
-                  <tr key={lead.id} className="group hover:bg-beige/30 transition-colors">
-                    <td className="py-8 px-4">
-                      <p className="font-bold text-forest mb-1">{lead.name}</p>
-                      <p className="text-sm text-earth/60">{lead.phone}</p>
-                    </td>
-                    <td className="py-8 px-4">
-                      {activeTab === 'stays' ? (
-                        <p className="text-sm font-serif text-forest">{lead.checkin} — {lead.checkout}</p>
-                      ) : (
-                        <p className="text-sm font-serif text-forest">{lead.event_date} ({lead.event_type})</p>
-                      )}
-                    </td>
-                    <td className="py-8 px-4 font-bold text-forest">{lead.guests}</td>
-                    <td className="py-8 px-4">
-                      <span className={`px-4 py-1.5 rounded-full text-[9px] font-bold uppercase tracking-widest ${
-                        lead.status === 'new' ? 'bg-blue-100 text-blue-600' :
-                        lead.status === 'contacted' ? 'bg-yellow-100 text-yellow-600' :
-                        'bg-green-100 text-green-600'
-                      }`}>
-                        {lead.status}
-                      </span>
-                    </td>
-                    <td className="py-8 px-4 text-right">
-                      <div className="flex justify-end gap-2">
-                        <button onClick={() => updateStatus(lead.id, activeTab === 'stays' ? 'stay_enquiries' : 'event_enquiries', 'contacted')} className="w-8 h-8 rounded-full bg-white border border-earth/10 flex items-center justify-center hover:bg-yellow-50 text-yellow-600 transition-colors">C</button>
-                        <button onClick={() => updateStatus(lead.id, activeTab === 'stays' ? 'stay_enquiries' : 'event_enquiries', 'booked')} className="w-8 h-8 rounded-full bg-white border border-earth/10 flex items-center justify-center hover:bg-green-50 text-green-600 transition-colors">B</button>
+      <div className="bg-white rounded-[4rem] shadow-2xl border border-white overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full text-left">
+            <thead>
+              <tr className="bg-beige/30 border-b border-earth/5">
+                <th className="py-8 px-10 text-[10px] uppercase tracking-[0.3em] font-black text-earth/30">Client Entity</th>
+                <th className="py-8 px-10 text-[10px] uppercase tracking-[0.3em] font-black text-earth/30">Engagement Period</th>
+                <th className="py-8 px-10 text-[10px] uppercase tracking-[0.3em] font-black text-earth/30 text-center">Volume</th>
+                <th className="py-8 px-10 text-[10px] uppercase tracking-[0.3em] font-black text-earth/30">Phase</th>
+                <th className="py-8 px-10 text-[10px] uppercase tracking-[0.3em] font-black text-earth/30 text-right">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-earth/5">
+              {(activeTab === 'stays' ? stays : events).map((lead) => (
+                <tr key={lead.id} className="group hover:bg-beige/10 transition-colors">
+                  <td className="py-10 px-10">
+                    <p className="font-bold text-forest text-lg mb-1 leading-none">{lead.name}</p>
+                    <p className="text-[10px] uppercase font-black tracking-widest text-earth/30">{lead.phone}</p>
+                  </td>
+                  <td className="py-10 px-10">
+                    {activeTab === 'stays' ? (
+                      <div>
+                        <p className="text-sm font-serif text-forest mb-1">{lead.checkin} — {lead.checkout}</p>
+                        <p className="text-[9px] font-black uppercase tracking-widest text-[#c5a059]">Duration: {Math.ceil((new Date(lead.checkout).getTime() - new Date(lead.checkin).getTime()) / (1000 * 60 * 60 * 24))} Days</p>
                       </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                    ) : (
+                      <div>
+                        <p className="text-sm font-serif text-forest mb-1">{lead.event_date}</p>
+                        <p className="text-[9px] font-black uppercase tracking-widest text-[#c5a059]">{lead.event_type} Special</p>
+                      </div>
+                    )}
+                  </td>
+                  <td className="py-10 px-10 text-center">
+                    <span className="text-2xl font-serif text-forest">{lead.guests}</span>
+                    <p className="text-[8px] font-black uppercase text-earth/20 tracking-widest">Guests</p>
+                  </td>
+                  <td className="py-10 px-10">
+                    <span className={`px-6 py-2 rounded-full text-[9px] font-black uppercase tracking-widest shadow-sm ${
+                      lead.status === 'new' ? 'bg-blue-50 text-blue-600' :
+                      lead.status === 'contacted' ? 'bg-[#c5a059]/10 text-[#c5a059]' :
+                      'bg-green-50 text-green-600'
+                    }`}>
+                      {lead.status}
+                    </span>
+                  </td>
+                  <td className="py-10 px-10 text-right">
+                    <div className="flex justify-end gap-3 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <button 
+                        onClick={() => updateStatus(lead.id, activeTab === 'stays' ? 'stay_enquiries' : 'event_enquiries', 'contacted')}
+                        className="px-6 py-2 bg-beige text-forest rounded-full text-[9px] font-black uppercase tracking-widest hover:bg-[#c5a059] hover:text-white transition-all"
+                      >
+                        Acknowledge
+                      </button>
+                      <button 
+                        onClick={() => updateStatus(lead.id, activeTab === 'stays' ? 'stay_enquiries' : 'event_enquiries', 'booked')}
+                        className="px-6 py-2 bg-forest text-white rounded-full text-[9px] font-black uppercase tracking-widest hover:shadow-xl transition-all"
+                      >
+                        Convert
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          {(activeTab === 'stays' ? stays : events).length === 0 && (
+            <div className="py-32 text-center">
+              <p className="text-4xl font-serif text-earth/10 italic">No enquiries currently in the queue.</p>
+            </div>
+          )}
         </div>
       </div>
     </div>

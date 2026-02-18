@@ -9,6 +9,9 @@ export const checkIsAdmin = async (): Promise<boolean> => {
     const { data: { session } } = await supabase.auth.getSession();
     if (!session?.user?.email) return false;
 
+    // Local Mock Bypass
+    if (session.user.id === 'mock-uuid') return true;
+
     const { data, error } = await supabase
       .from('admin_users')
       .select('email')
@@ -16,8 +19,7 @@ export const checkIsAdmin = async (): Promise<boolean> => {
       .maybeSingle();
 
     if (error || !data) {
-      // If a session exists but the user is not in the allowlist, sign them out
-      if (session) await supabase.auth.signOut();
+      if (session && session.user.id !== 'mock-uuid') await supabase.auth.signOut();
       return false;
     }
 

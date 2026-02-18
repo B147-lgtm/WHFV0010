@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import { AMENITIES as STATIC_AMENITIES, FAQs as STATIC_FAQS, GALLERY_IMAGES as STATIC_GALLERY, BRAND_ASSETS, TESTIMONIALS as STATIC_TESTIMONIALS, ICONS } from '../constants';
+import { AMENITIES as STATIC_AMENITIES, GALLERY_IMAGES as STATIC_GALLERY, BRAND_ASSETS, TESTIMONIALS as STATIC_TESTIMONIALS } from '../constants';
 import { supabase } from '../lib/supabase';
 
 const StarRating = ({ rating }: { rating: number }) => {
@@ -28,7 +28,7 @@ export const Home: React.FC = () => {
   const categories = ['All', 'Rooms', 'Pool', 'Lawn', 'Bar Garden'];
 
   useEffect(() => {
-    supabase.from('site_settings').select('*').order('updated_at', { ascending: false }).limit(1).maybeSingle().then(({ data }: any) => {
+    supabase.from('site_settings').select('*').limit(1).maybeSingle().then(({ data }: any) => {
       if (data) setSettings(data);
     });
 
@@ -40,6 +40,12 @@ export const Home: React.FC = () => {
   const heroImage = settings?.hero_image_url || BRAND_ASSETS.heroImage;
   const heroTitle = settings?.hero_title || 'Welcome to Heaven';
   const heroSubtitle = settings?.hero_subtitle || 'A sanctuary of elegance and luxury.';
+  
+  // Section 2 Dynamic Data
+  const section2Badge = settings?.section2_badge || 'Entire Farm Stay : 5 Star Airbnb guest favourite';
+  const section2Title = settings?.section2_title || 'Luxury of Tranquility';
+  const section2Subtitle = settings?.section2_subtitle || 'Immerse yourself in a bespoke sanctuary designed for group stays and high-end retreats. Experience the pinnacle of Jaipur\'s hospitality with 8 private suites, sprawling gardens, and a dedicated on-site team.';
+  const section2Image = settings?.section2_image_url || "https://images.unsplash.com/photo-1544161515-4af6b1d8d16e?auto=format&fit=crop&q=80&w=1200";
 
   const filteredGallery = activeCategory === 'All' 
     ? STATIC_GALLERY.slice(0, 6) 
@@ -99,12 +105,11 @@ export const Home: React.FC = () => {
         </div>
       </section>
 
-      {/* Refined Section 2: Airbnb Style Editorial */}
+      {/* Dynamic Editorial Section */}
       <section className="py-32 px-6 bg-white border-y border-beige/50">
         <div className="container mx-auto">
           <div className="flex flex-col lg:flex-row items-center gap-12 lg:gap-24">
             
-            {/* Left Content Column */}
             <div className="w-full lg:w-7/12">
               <motion.div
                 initial={{ opacity: 0, y: 20 }}
@@ -114,28 +119,15 @@ export const Home: React.FC = () => {
               >
                 <div className="flex items-center mb-6">
                   <span className="bg-forest text-[#c5a059] text-[10px] font-bold px-5 py-2 rounded-full uppercase tracking-[0.2em] shadow-sm border border-white/10">
-                    Entire Farm Stay : 5 Star Airbnb guest favourite
+                    {section2Badge}
                   </span>
                 </div>
-                <h2 className="text-4xl md:text-6xl font-serif text-forest mb-6 leading-[1.1]">Luxury of Tranquility</h2>
+                <h2 className="text-4xl md:text-6xl font-serif text-forest mb-6 leading-[1.1]">{section2Title}</h2>
                 
-                {/* 2b: Property Stats Line */}
-                <div className="mb-8 flex items-center gap-2">
-                   <p className="text-[#c5a059] text-xs font-bold uppercase tracking-widest">
-                     24 guests <span className="mx-2 opacity-30 text-forest">|</span> 
-                     8 suite Bedrooms <span className="mx-2 opacity-30 text-forest">|</span> 
-                     1 presidential Suite <span className="mx-2 opacity-30 text-forest">|</span> 
-                     4 Lawns
-                   </p>
-                </div>
-
                 <p className="text-earth/60 text-lg font-light leading-relaxed max-w-2xl mb-12">
-                  Immerse yourself in a bespoke sanctuary designed for group stays and high-end retreats. 
-                  Experience the pinnacle of Jaipur's hospitality with 8 private suites, sprawling gardens, 
-                  and a dedicated on-site team.
+                  {section2Subtitle}
                 </p>
 
-                {/* Amenity Buttons UI */}
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-12">
                   {STATIC_AMENITIES.map((amenity, i) => (
                     <motion.div 
@@ -155,14 +147,13 @@ export const Home: React.FC = () => {
 
                 <div className="pt-8 border-t border-beige/50">
                   <Link to="/stay" className="inline-flex items-center gap-3 text-[11px] font-bold uppercase tracking-widest text-forest hover:text-[#c5a059] transition-colors group">
-                    View Full Experience
+                    Explore Luxury Suites
                     <svg className="w-5 h-5 transition-transform group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
                   </Link>
                 </div>
               </motion.div>
             </div>
 
-            {/* Right Image Column */}
             <motion.div 
               initial={{ opacity: 0, scale: 0.95 }}
               whileInView={{ opacity: 1, scale: 1 }}
@@ -171,12 +162,11 @@ export const Home: React.FC = () => {
             >
               <div className="relative group rounded-[3rem] overflow-hidden shadow-2xl border-[12px] border-beige/30">
                 <img 
-                  src="https://images.unsplash.com/photo-1544161515-4af6b1d8d16e?auto=format&fit=crop&q=80&w=1200" 
-                  alt="Airbnb Luxury Experience" 
+                  src={section2Image} 
+                  alt="Editorial" 
                   className="w-full aspect-[4/5] object-cover transition-transform duration-1000 group-hover:scale-105" 
                 />
                 
-                {/* Floating Airbnb-style Badge */}
                 <div className="absolute top-6 left-6 bg-white/90 backdrop-blur-md p-4 rounded-2xl shadow-xl flex items-center gap-3 border border-white/50">
                   <div className="w-10 h-10 bg-[#c5a059] rounded-full flex items-center justify-center text-white">
                     <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -185,24 +175,16 @@ export const Home: React.FC = () => {
                   </div>
                   <div>
                     <p className="text-[10px] font-bold uppercase tracking-widest text-forest">Verified Stay</p>
-                    <p className="text-[12px] text-earth/60 font-light">Superhost Property</p>
+                    <p className="text-[12px] text-earth/60 font-light">Jaipur Elite</p>
                   </div>
-                </div>
-
-                <div className="absolute bottom-0 inset-x-0 bg-gradient-to-t from-black/60 to-transparent p-10">
-                  <Link to="/gallery" className="bg-white/20 backdrop-blur-md text-white border border-white/30 px-6 py-3 rounded-full text-[10px] font-bold uppercase tracking-widest hover:bg-white hover:text-forest transition-all flex items-center gap-2 w-fit">
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-                    Show all photos
-                  </Link>
                 </div>
               </div>
             </motion.div>
-
           </div>
         </div>
       </section>
 
-      {/* Gallery Preview */}
+      {/* Rest of components follow... */}
       <section className="py-32 bg-forest text-white px-6">
         <div className="container mx-auto">
           <div className="flex flex-col md:flex-row justify-between items-end mb-16 gap-8">
@@ -243,16 +225,9 @@ export const Home: React.FC = () => {
               ))}
             </AnimatePresence>
           </div>
-          
-          <div className="mt-20 text-center">
-            <Link to="/gallery" className="inline-flex items-center gap-4 text-[#c5a059] uppercase tracking-[0.3em] font-bold text-xs hover:gap-6 transition-all">
-              View Full Gallery
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/></svg>
-            </Link>
-          </div>
         </div>
       </section>
-
+      
       {/* Testimonials */}
       <section className="py-32 px-6">
         <div className="container mx-auto">
@@ -271,21 +246,6 @@ export const Home: React.FC = () => {
                   </div>
                 </div>
                 <p className="text-earth/70 italic leading-relaxed">"{t.text}"</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* FAQ Section */}
-      <section className="py-32 bg-beige px-6 border-t border-earth/10">
-        <div className="container mx-auto max-w-4xl">
-          <h2 className="text-4xl font-serif text-forest text-center mb-20">Frequently Asked</h2>
-          <div className="space-y-6">
-            {STATIC_FAQS.map((faq, i) => (
-              <div key={i} className="bg-white rounded-2xl p-8 shadow-sm">
-                <h4 className="font-serif text-xl text-forest mb-4">{faq.q}</h4>
-                <p className="text-earth/60 text-sm leading-relaxed">{faq.a}</p>
               </div>
             ))}
           </div>

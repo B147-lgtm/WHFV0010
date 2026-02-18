@@ -1,6 +1,7 @@
 import React, { useEffect, Suspense } from 'react';
 import { HashRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import { Layout } from './components/Layout';
+import { AdminLayout } from './components/AdminLayout';
 import { Home } from './pages/Home';
 import { Stay } from './pages/Stay';
 import { Events } from './pages/Events';
@@ -26,22 +27,21 @@ const App: React.FC = () => {
   return (
     <Router>
       <ScrollToTop />
-      <Layout>
-        <Suspense fallback={<div className="min-h-screen bg-beige flex items-center justify-center font-serif text-2xl">Refining Experiences...</div>}>
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/stay" element={<Stay />} />
-            <Route path="/events" element={<Events />} />
-            <Route path="/gallery" element={<Gallery />} />
-            <Route path="/contact" element={<Contact />} />
-            <Route path="/admin" element={<Admin />} />
-            <Route path="/admin/gallery" element={<AdminGalleryPage />} />
-            <Route path="/admin/branding" element={<AdminBrandingPage />} />
-            <Route path="/admin/leads" element={<AdminLeads />} />
-            <Route path="/admin/content" element={<AdminContent />} />
-          </Routes>
-        </Suspense>
-      </Layout>
+      <Routes>
+        {/* Public Routes */}
+        <Route path="/" element={<Layout><Home /></Layout>} />
+        <Route path="/stay" element={<Layout><Stay /></Layout>} />
+        <Route path="/events" element={<Layout><Events /></Layout>} />
+        <Route path="/gallery" element={<Layout><Gallery /></Layout>} />
+        <Route path="/contact" element={<Layout><Contact /></Layout>} />
+
+        {/* Admin Routes wrapped in AdminLayout */}
+        <Route path="/admin" element={<AdminLayout><Admin /></AdminLayout>} />
+        <Route path="/admin/leads" element={<AdminLayout><AdminLeads /></AdminLayout>} />
+        <Route path="/admin/content" element={<AdminLayout><AdminContent /></AdminLayout>} />
+        <Route path="/admin/gallery" element={<AdminLayout><AdminGalleryPage /></AdminLayout>} />
+        <Route path="/admin/branding" element={<AdminLayout><AdminBrandingPage /></AdminLayout>} />
+      </Routes>
     </Router>
   );
 };
